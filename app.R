@@ -1,6 +1,6 @@
 
 # Before running, add ledger.csv to data/ , using:
-# `ledger csv ~/.ledger.journal > ledger.csv`
+# `ledger csv -f ~/.ledger.journal > ledger.csv`
 
 # Packages ----
 library(shiny)
