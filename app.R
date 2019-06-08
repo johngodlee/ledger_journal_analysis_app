@@ -62,14 +62,14 @@ month_profit <- max(month_start_df$total) - min(month_start_df$total)
 
 # Food costs 30 days
 food_30_df <- ledger_cumsum %>%
-	filter(source == "expenses:food",
+	filter(grepl("expenses:food", source),
 				 good_date > (today - 30))
 
 food_30 <- sum(food_30_df$amount)
 
 # Transport costs 30 days
 trans_30_df <- ledger_cumsum %>%
-	filter(source == "expenses:transport",
+	filter(grepl("expenses:transport", source),
 				 good_date > (today - 30))
 
 trans_30 <- sum(trans_30_df$amount)
@@ -182,14 +182,13 @@ server <- function(input, output) {
 			theme(axis.text.x=element_text(angle=45, 
 																		 vjust=1, 
 																		 hjust=1)) + 
-			theme(legend.title = element_blank()) + 
-			theme(legend.justification = c(1, 0.5), legend.position = c(1, 0.5))
+			theme(legend.title = element_blank()) 
 	})
 	
 	output$plot2 <- renderPlot({
 		## Create df only with student account 
 		assets_bank_student <- ledger_cumsum %>%
-			filter(source == "assets:bank:student_acc")
+			filter(source == "assets:bank:student")
 		
 		## Line plot of student account over time with description of expenditure
 		ggplot(assets_bank_student, aes(x = good_date, y = cumulative, group = source)) + 
