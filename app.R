@@ -1,6 +1,6 @@
 
 # Before running, add ledger.csv to data/ , using:
-# `ledger csv -f ~/.ledger.journal > ledger.csv`
+# `ledger csv -f ~/.ledger.journal > data/ledger.csv`
 
 # Packages ----
 library(shiny)
@@ -77,9 +77,16 @@ trans_30 <- sum(trans_30_df$amount)
 
 # ui.R ----
 ui <- dashboardPage(
-	dashboardHeader(title = "Analysing Ledger data"),
+	dashboardHeader(title = "Ledger"),
 	dashboardSidebar(disable = TRUE),
 	dashboardBody(
+		fluidRow(
+			column(width = 12,
+				textInput("current", 
+					"Current account", 
+					value = "assets:bank:current")
+				)
+			),
 		fluidRow(
 			column(width = 6,
 						 fluidRow(width = 6,
@@ -130,8 +137,8 @@ ui <- dashboardPage(
 						 )
 			),
 			box(
-				title = "Assets over time",
-				plotOutput("plot1", height = 250),
+				title = "Current account over time",
+				plotOutput("plot2", height = 250),
 				width = 6)
 		),
 		fluidRow(
@@ -146,8 +153,8 @@ ui <- dashboardPage(
 		),
 		fluidRow(
 			box(
-				title = "Student account over time",
-				plotOutput("plot2", height = 250),
+				title = "Assets over time",
+				plotOutput("plot1", height = 250),
 				width = 6),
 			box(
 				title = "Total equity over time",
@@ -186,21 +193,26 @@ server <- function(input, output) {
 	})
 	
 	output$plot2 <- renderPlot({
-		## Create df only with student account 
-		assets_bank_student <- ledger_cumsum %>%
-			filter(source == "assets:bank:student")
-		
-		## Line plot of student account over time with description of expenditure
-		ggplot(assets_bank_student, aes(x = good_date, y = cumulative, group = source)) + 
-			geom_line() + 
-			scale_x_date(date_breaks = "1 month", date_labels = "%b-%Y") + 
-			xlab("Date") + 
-			ylab("Balance (£)") + 
-			theme_classic() + 
-			theme(axis.text.x=element_text(angle=45, 
-																		 vjust=1, 
-																		 hjust=1))
-	})
+			## Create df only with student account
+			assets_bank_current <- reactive({
+				ledger_cumsum %>%
+				filter(source == input$current)
+			})
+			
+			## Line plot of student account over time with description of expenditure
+			ggplot(assets_bank_current(),
+				aes(x = good_date, y = cumulative, group = source)) +
+				geom_line() +
+				scale_x_date(date_breaks = "1 month", date_labels = "%b-%Y") +
+				xlab("Date") +
+				ylab("Balance (£)") +
+				theme_classic() +
+				theme(axis.text.x = element_text(
+					angle = 45,
+					vjust = 1,
+					hjust = 1
+				))
+		})
 	
 	output$plot3 <- renderPlot({
 		## Create df of Expenses summary
